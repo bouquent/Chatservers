@@ -1,0 +1,1 @@
+/usr/bin/c++  -g  -rdynamic CMakeFiles/chatserver.dir/chatserver.o CMakeFiles/chatserver.dir/chatservice.o CMakeFiles/chatserver.dir/mian.o CMakeFiles/chatserver.dir/model/offlinemessagemodel.o CMakeFiles/chatserver.dir/model/usermodel.o CMakeFiles/chatserver.dir/db/mymysql.o  -o ../../../bin/chatserver  -lmymuduo -lpthread -lmysqlclient 
