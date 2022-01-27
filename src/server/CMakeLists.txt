@@ -1,7 +1,10 @@
+#定义了LIST变量，包含编译所需的所有源文件
 aux_source_directory(. SRC_LIST)
-aux_source_directory(./model SRC_LIST1)
-aux_source_directory(./db SRC_LIST2)
+aux_source_directory(./db DB_LIST)
+aux_source_directory(./model MODEL_LIST)
 
-add_executable(chatserver ${SRC_LIST} ${SRC_LIST1} ${SRC_LIST2})
+#指定生成的可执行文件
+add_executable(chatserver ${SRC_LIST} ${DB_LIST} ${MODEL_LIST} ${REDIS_LIST})
 
-target_link_libraries(chatserver mymuduo pthread mysqlclient)
+#指定可执行文件需要链接的库文件
+target_link_libraries(chatserver mymuduo pthread mysqlclient hiredis)

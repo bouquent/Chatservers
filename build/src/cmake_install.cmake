@@ -1,4 +1,4 @@
-# Install script for directory: /home/admin/Desktop/mychat/src
+# Install script for directory: /home/xxs/Desktop/mychat/mychat/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -37,9 +37,15 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/admin/Desktop/mychat/build/src/server/cmake_install.cmake")
+  include("/home/xxs/Desktop/mychat/mychat/build/src/server/cmake_install.cmake")
+  include("/home/xxs/Desktop/mychat/mychat/build/src/client/cmake_install.cmake")
 
 endif()
 

@@ -20,6 +20,7 @@ public:
 
 private:
     TcpServer server_;
+    EventLoop* loop_;
 };
 
 

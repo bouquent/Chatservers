@@ -1,50 +1,41 @@
 #include "server/model/usermodel.h"
-#include "server/db/mymysql.h"
+#include "server/db/mysqlpool.h"
 
 #include <string.h>
 
-static std::string myhost = "127.0.0.1";
-static std::string myuser = "root";
-static std::string mypasswd = "chenzezheng666";
-static std::string mydb = "chat";
-static unsigned int port = 3306;
-
-bool UserModel::insert(User& user)
+User UserModel::insert(const std::string& name, const std::string& passwd)
 {
     char sql[1024] = {0};
     snprintf(sql, 1024, "insert into User(name, password, state) values('%s', '%s', 'offline')",  //刚新建的时候一定是未登录的
-                    user.name().c_str(), user.passwd().c_str());
+                    name.c_str(), passwd.c_str());
 
-    MySql conn;
-    if (conn.connect(myhost.c_str(), myuser.c_str(), mypasswd.c_str(), mydb.c_str(), port) == false) {
-        return false;
+    std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+
+    if (conn->update(sql) == true) {
+        User user;
+        user.setName(name);
+        user.setPasswd(passwd);
+        user.setId(mysql_insert_id(conn->getConnect()));
+        return user;
     }
-    
-    if (conn.update(sql) == true) {
-        user.setId(mysql_insert_id(conn.getConnect()));
-        return true;
-    }
-    return false;
+    return User();
 }
 
 User UserModel::query(int id) 
 {
     char sql[1024] = {0};
-    snprintf(sql, 1204, "select * from User where id = %d", id);
+    snprintf(sql, 1204, "select id, name, password, state from User where id = %d", id);
 
-    MySql conn;
-    if (conn.connect(myhost.c_str(), myuser.c_str(), mypasswd.c_str(), mydb.c_str(), port) == false) {
-        return User();
-    }
+    std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
     
-    MYSQL_RES* result = conn.query(sql);
+    MYSQL_RES* result = conn->query(sql);
     if (nullptr == result) {
         return User();
     }
     MYSQL_ROW row = mysql_fetch_row(result);
 
     User user;
-    user.setId(id);
+    user.setId(atoi(row[0]));
     user.setName(row[1]);
     user.setPasswd(row[2]);
     if (strcmp(row[3], "offline") == 0) {
@@ -70,30 +61,17 @@ bool UserModel::updateState(const User& user, State updatestate)
     char sql[1024] = {0}; 
     snprintf(sql, 1024, "update User set state = '%s' where id = %d", state.c_str(), id);
 
-    MySql conn;
-    if (conn.connect(myhost.c_str(), myuser.c_str(), mypasswd.c_str(), mydb.c_str(), port) == false) {
-        return false;
-    }
-    if (conn.update(sql) == false) {
-        return false;
-    }
-    return true;
-    
+    std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+
+    return conn->update(sql);
 }
 
-bool UserModel::resetState(const User& user)
+bool UserModel::resetState(int userid)
 {
-    int id = user.id();
     char sql[1024] = {0}; 
-    snprintf(sql, 1024, "update User set state = 'offline' where id = %d", id);
+    snprintf(sql, 1024, "update User set state = 'offline' where id = %d", userid);
 
-    MySql conn;
-    if (conn.connect(myhost.c_str(), myuser.c_str(), mypasswd.c_str(), mydb.c_str(), port) == false) {
-        return false;
-    }
-    if (conn.update(sql) == false) {
-        return false;
-    }
-    return true;
+    std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
 
+    return conn->update(sql);
 }

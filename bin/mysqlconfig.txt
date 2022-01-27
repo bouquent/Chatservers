@@ -1,0 +1,13 @@
+host:127.0.0.1
+user:root
+passwd:chenzezheng666
+port:3306
+db:chat
+
+#单位是毫秒
+ConnectOutTime:1000
+#单位是秒
+maxFreeTime:60
+#单位是个数
+minCountNum:10
+maxCountNum:150

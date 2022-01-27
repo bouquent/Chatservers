@@ -2,12 +2,25 @@
 #include "server/chatservice.h"
 #include "public.h"
 #include "json.hpp"
-#include <mymuduo/logging.hpp>
+#include "mylog.h"
+
+#include <signal.h>
+#include <unistd.h>
 
 using namespace nlohmann;
 
+static void sighandler(int signal)
+{
+    //服务器异常退出，捕获SIGINT信号
+    ChatService::getchatService()->serverCloseExption();
+
+    ::exit(0);
+}
+
+
 ChatServer::ChatServer(EventLoop* loop, const InetAddr& localaddr, const std::string& nameArg)
             : server_(loop, localaddr, nameArg)
+            , loop_(loop)
 {
     server_.setConnectionCallback(std::bind(&ChatServer::onConnection, this, std::placeholders::_1));
     
@@ -21,16 +34,28 @@ void ChatServer::onConnection(const TcpConnectionPtr& conn)
 {
     if (!conn->connected()) {
         ChatService::getchatService()->clientCloseExption(conn);
-        LOG_INFO("one client is disconnect the server!");
+        MYLOG_INFO("one client is disconnect the server!");
     }
 }
 
 void ChatServer::onMessage(const TcpConnectionPtr& conn, Buffer* buffer, Timestamp time)
 {
     std::string message = buffer->retrieveAllAsString();
-    json js = json::parse(message);
+    if (!json::accept(message)) {
+        MYLOG_INFO("recvice a message, but is not json!");
+        printf("the message is %s\n", message.c_str());
+        return ;
+    }
     
-    MSG_ID msgtype = js["msgid"];
+    //反序列化
+    json js = json::parse(message);
+
+    if (!js.contains("msgid")) {
+         MYLOG_ERROR("revice a message, but it's not contains msgid");
+         return ;
+    }
+
+    MSG_ID msgtype = (MSG_ID)js["msgid"].get<int>();
     
     auto msgHandler = ChatService::getchatService()->getHandler(msgtype);
     
@@ -40,7 +65,11 @@ void ChatServer::onMessage(const TcpConnectionPtr& conn, Buffer* buffer, Timesta
 
 void ChatServer::start()
 {
-    server_.setThreadNum(1);  //3个subloop，一个mainloop
+    server_.setThreadNum(2);  //1个subloop，一个mainloop
     
     server_.start();
+
+    loop_->runEvery(30.0, std::bind(&ChatService::heartTest, ChatService::getchatService()));   //每隔30秒进行一次心跳检测
+
+    signal(SIGINT, sighandler);
 }
