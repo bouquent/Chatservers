@@ -14,11 +14,12 @@
 class ClientService : deletecopy
 {
 public:
+    ~ClientService();
     static ClientService* getService(); //外部接口
     static void readMessageTask(ClientService* service);      //专门读取并解读外部发送来的消息
     static void sendHeartMsg(ClientService* service);         //专门发送心跳包的线程调用
 
-    bool connect();
+    bool connect(const char* ip, uint16_t port);
     void mainEnum(); 
 
     //登录注册功能
@@ -53,9 +54,9 @@ private:
     std::unordered_map<std::string, std::string> commandMap_;   //支持的命令列表
     std::unordered_map<std::string, HandlerRequest> commandHandlerMap_;
 
-    bool userOffline_;                              //用户是否上线
+    volatile bool userOffline_;                   //用户是否上线，由于只有logout会修改useroffline成员，所以直接使用的useroffline
     int userid_;                                  //用户自己的id
-    std::string userName_;                             //用户的名字
+    std::string userName_;                        //用户的名字
     std::vector<std::string> g_currentFriend;     //当前好友信息
     std::vector<std::string> g_currentGroup;      //当前群组信息
 

@@ -1,1 +1,2 @@
-cmake .. && make to build executable file
+cmake.. to create makefile
+make to create executable file

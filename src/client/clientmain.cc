@@ -1,15 +1,9 @@
 #include <unistd.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <assert.h>
 #include <string.h>
 #include <thread>
 
 #include "client/clientservice.h"
 #include "json.hpp"
-using nlohmann::json;
 
 bool client_stop = false;
 
@@ -40,17 +34,8 @@ int main(int argc,  char** argv)
         exit(1);
     }
 
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(argv[1]);
-    server_addr.sin_port = htons(atoi(argv[2]));
-
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    assert(sockfd != -1);
-
-    ClientService::getService()->setSockfd(sockfd);     //为clientservice提供sock以及sockaddr
-    ClientService::getService()->setClientAddr(server_addr);   
-    if (!ClientService::getService()->connect()) {      //建立连接
+    
+    if (!ClientService::getService()->connect(argv[1], atoi(argv[2])) ) {      //建立连接
         exit(1);
     }
 
@@ -104,6 +89,5 @@ int main(int argc,  char** argv)
 
     }
     
-    close(sockfd);
     return 0;
 }

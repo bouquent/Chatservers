@@ -381,7 +381,6 @@ void ChatService::handleRedisSubscribeMessage(int userid, const std::string& msg
     auto iter = connections_.find(userid);
     if (iter != connections_.end()) {
         iter->second->send(msg);
-        printf("%s!!!!\n", msg.c_str());
         return ;
     }
 

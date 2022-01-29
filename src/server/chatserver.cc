@@ -43,7 +43,6 @@ void ChatServer::onMessage(const TcpConnectionPtr& conn, Buffer* buffer, Timesta
     std::string message = buffer->retrieveAllAsString();
     if (!json::accept(message)) {
         MYLOG_INFO("recvice a message, but is not json!");
-        printf("the message is %s\n", message.c_str());
         return ;
     }
     

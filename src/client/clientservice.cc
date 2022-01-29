@@ -7,9 +7,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <string>
 #include <vector>
+
+
 
 using nlohmann::json;
 
@@ -46,14 +49,30 @@ ClientService::ClientService()
     commandHandlerMap_.insert({"logout", std::bind(&ClientService::logout, this, _1) });
 }
 
+ClientService::~ClientService()
+{
+    close(sockfd_);
+}
+
 ClientService* ClientService::getService() 
 {
     static ClientService clientService;
     return &clientService;
 }
 
-bool ClientService::connect()
+bool ClientService::connect(const char* ip, uint16_t port)
 {
+    ::bzero(&serverAddr_, sizeof(serverAddr_));
+    serverAddr_.sin_family = AF_INET;
+    serverAddr_.sin_addr.s_addr = inet_addr(ip);
+    serverAddr_.sin_port = htons(port);
+
+    sockfd_ = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd_ == -1) {
+        MYLOG_ERROR("[%s]:%d create socket error!", __FILE__, __LINE__);
+        return false;
+    }
+
     int ret = ::connect(sockfd_, (struct sockaddr*)& serverAddr_, sizeof(serverAddr_));
     if (ret != 0) {
         MYLOG_ERROR("[%s]:%d connect wrong!", __FILE__, __LINE__);
@@ -66,7 +85,7 @@ void ClientService::readMessageTask(ClientService* service)
 {
     while (!service->userOffline_) {
         char buffer[4096] = {0};
-        int len = recv(service->sockfd_, buffer, sizeof(buffer), 0);
+        int len = ::recv(service->sockfd_, buffer, sizeof(buffer), 0);
         if (len == -1) {
             MYLOG_ERROR("[%s]:%d recv error!", __FILE__, __LINE__);
             continue;
@@ -118,7 +137,7 @@ void ClientService::sendHeartMsg(ClientService* service)
         json js;
         js["msgid"] = HEART_MSG;
         std::string heartmsg = js.dump();
-        int ret = send(service->sockfd_, heartmsg.c_str(), heartmsg.size(), 0);
+        int ret = ::send(service->sockfd_, heartmsg.c_str(), heartmsg.size(), 0);
         if (ret == -1 && errno != EINTR) {
             MYLOG_ERROR("[%s]:%d send heart message failure!", __FILE__, __LINE__);
         }
