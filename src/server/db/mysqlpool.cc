@@ -24,11 +24,12 @@ MySqlPool::MySqlPool()
         connectNum_++;
     }
 
-    std::thread thread1(MySqlPool::scannerOverFreeTime, this);
-    thread1.detach();
-
-    std::thread thread2(MySqlPool::produceMysqlConnect, this);
-    thread2.detach();
+    quit_ = false;
+    threadProduce_.reset(new std::thread(MySqlPool::scannerOverFreeTime, this));
+    threadProduce_->detach();
+    
+    threadScanner_.reset(new std::thread(MySqlPool::produceMysqlConnect, this));
+    threadScanner_->detach();
 }
 
 MySqlPool::~MySqlPool()
@@ -39,6 +40,7 @@ MySqlPool::~MySqlPool()
         delete conn;
     }
 }
+
 
 
 std::shared_ptr<MySql> MySqlPool::getConnect()
@@ -67,7 +69,7 @@ std::shared_ptr<MySql> MySqlPool::getConnect()
 
 void MySqlPool::scannerOverFreeTime(MySqlPool* mysqlPool)
 {
-    while (1) {
+    while (!mysqlPool->quit_) {
         sleep(mysqlPool->maxFreeTime_);   //模拟定时效果
 
         while (mysqlPool->connectNum_ > mysqlPool->minConnectNum_) {
@@ -88,7 +90,7 @@ void MySqlPool::scannerOverFreeTime(MySqlPool* mysqlPool)
 
 void MySqlPool::produceMysqlConnect(MySqlPool* mysqlPool)
 {
-    while (1) {
+    while (!mysqlPool->quit_) {
         std::unique_lock<std::mutex> lock(mysqlPool->mutex_);
 
         while (!mysqlPool->connectQue_.empty()) {

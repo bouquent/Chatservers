@@ -13,8 +13,9 @@ static void sighandler(int signal)
 {
     //服务器异常退出，捕获SIGINT信号
     ChatService::getchatService()->serverCloseExption();
+    MYLOG_ERROR("the server recv SIGINT!");
 
-    ::exit(0);
+    ::abort();  //exit无法到达想要的效果？
 }
 
 

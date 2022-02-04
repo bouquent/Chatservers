@@ -7,6 +7,9 @@ bool FriendModel::addFriend(int myid, int friendid)
     snprintf(sql, 1024, "insert into Friend(userid, friendid) values(%d, %d)", myid, friendid);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
 
     return conn->update(sql);
 }
@@ -17,6 +20,9 @@ bool FriendModel::deleteFriend(int myid, int friendid)
     snprintf(sql, 1024, "delete from Friend where userid = %d and friendid = %d", myid, friendid);
     
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
 
     return conn->update(sql);
 }
@@ -28,7 +34,9 @@ std::vector<User> FriendModel::queryFriend(int myid)
                              (select friendid from Friend where userid = %d)", myid);
     
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
-    
+    if (nullptr == conn) {
+        return {};
+    }
 
     MYSQL_RES* result = conn->query(sql);
     if (result == nullptr) {

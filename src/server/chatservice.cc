@@ -1,6 +1,7 @@
 #include "server/chatservice.h"
 #include "server/model/user.h"
 #include "server/model/groupuser.h"
+#include "server/db/mysqlpool.h"
 #include "json.hpp"
 #include "mylog.h"
 
@@ -33,6 +34,7 @@ ChatService::ChatService()
     if (redis_.connect()) {
         redis_.setNotify_message_handler(std::bind(&ChatService::handleRedisSubscribeMessage, this, _1, _2));
     }
+
 }
 
 ChatService::~ChatService() 
@@ -66,9 +68,9 @@ void ChatService::login(const TcpConnectionPtr& conn, const json& js, Timestamp 
     json response;
     response["msgid"] = LOGIN_ACK_MSG;
     //检测登录是否符合要求
-    if (passwd != user.passwd()) {      
+    if (user.id() == -1 || passwd != user.passwd()) {      
         //密码错误
-        response["errmsg"] = "your password is wrong!";
+        response["errmsg"] = "your userid or password is wrong!";
         response["errno"] = -1;
         conn->send(response.dump());
         return ;

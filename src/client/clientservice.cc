@@ -246,7 +246,7 @@ bool ClientService::loginUser(int userid, const std::string& passwd)
 
     //展示离线消息
     if (jsrev.contains("offlinemessage")) {
-        std::cout << "your offlineMessage" << std::endl;
+        std::cout << "-----------your offlineMessage------------" << std::endl;
         std::vector<std::string> messages = jsrev["offlinemessage"];
         for (auto message : messages) {
             auto jsmsg = json::parse(message);

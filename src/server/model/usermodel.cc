@@ -10,6 +10,9 @@ User UserModel::insert(const std::string& name, const std::string& passwd)
                     name.c_str(), passwd.c_str());
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return User();
+    }
 
     if (conn->update(sql) == true) {
         User user;
@@ -27,12 +30,18 @@ User UserModel::query(int id)
     snprintf(sql, 1204, "select id, name, password, state from User where id = %d", id);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
-    
-    MYSQL_RES* result = conn->query(sql);
-    if (nullptr == result) {
+    if (nullptr == conn) {
         return User();
     }
+    
+    MYSQL_RES* result = conn->query(sql);
+    if (nullptr == result) {   
+        return User();      //查询失败
+    }
     MYSQL_ROW row = mysql_fetch_row(result);
+    if (row == nullptr) {   
+        return User();      //查询结果为空
+    }
 
     User user;
     user.setId(atoi(row[0]));
@@ -62,6 +71,9 @@ bool UserModel::updateState(const User& user, State updatestate)
     snprintf(sql, 1024, "update User set state = '%s' where id = %d", state.c_str(), id);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
 
     return conn->update(sql);
 }
@@ -72,6 +84,9 @@ bool UserModel::resetState(int userid)
     snprintf(sql, 1024, "update User set state = 'offline' where id = %d", userid);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
 
     return conn->update(sql);
 }

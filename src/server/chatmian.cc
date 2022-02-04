@@ -17,9 +17,3 @@ int main(int argc, char** argv)
     
     return 0;
 }
-
-/*
-    \002\200\376\377\a\000\000\000\320\b\000\350\377\177\000\000\",\"msgid\":5,\"name\":\"zhang san\",\"time\":\"2022/01/26 23:20:00\",\"toid\":8,\"userid\":7}
-    {\"message\":\"hasd\",\"msgid\":5,\"name\":\"zhang san\",\"time\":\"2022/01/26 23:20:00\",\"toid\":8,\"userid\":7}"
-    101
-*/

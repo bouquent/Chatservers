@@ -3,6 +3,7 @@
 
 #include "deletecopy.h"
 #include "mymysql.h"
+#include <thread>
 #include <queue>
 #include <string>
 #include <memory>
@@ -27,6 +28,10 @@ private:
     static void produceMysqlConnect(MySqlPool*);  //专门生产connection的线程
 
 private:
+    //生产者线程和拆除连接线程
+    std::shared_ptr<std::thread> threadProduce_;
+    std::shared_ptr<std::thread> threadScanner_;
+
     //连接信息
     std::string host_;
     std::string user_;
@@ -35,9 +40,10 @@ private:
     int port_;
 
 
+    bool quit_;             //线程是否退出
     int maxConnectNum_;     //连接数限制
     int minConnectNum_;
-    int connectNum_;          //当前连接数
+    int connectNum_;        //当前连接数
     int maxFreeTime_;       //最大空闲时间
     int connectOutTime_;    //连接超时时间
 

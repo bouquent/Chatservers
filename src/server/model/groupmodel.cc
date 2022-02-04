@@ -9,6 +9,9 @@ Group GroupModel::createGroup(const std::string& groupName, const std::string& g
                         groupName.c_str(), groupDesc.c_str());
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return Group();
+    }
    
 
     if (conn->update(sql) == true) {
@@ -29,6 +32,9 @@ bool GroupModel::addGroup(int userid, int groupid, const std::string& role)
                         userid, groupid, role.c_str());
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
     
     return conn->update(sql);
 }
@@ -40,6 +46,9 @@ std::vector<GroupUser> GroupModel::queryGroupUser(int groupid)
                         on User.id = GroupUser.userid where groupid = %d", groupid);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return {};
+    }
 
     MYSQL_RES *result = conn->query(sql);
     if (nullptr == result) {
@@ -74,6 +83,9 @@ std::vector<Group> GroupModel::queryGroup(int userid)
                 (select groupid from GroupUser where userid = %d)", userid);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return {};
+    }
 
     MYSQL_RES *result = conn->query(sql);
     if (nullptr == result) {

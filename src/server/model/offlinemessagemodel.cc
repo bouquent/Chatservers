@@ -8,6 +8,9 @@ bool OfflineMessageModel::insert(int id, const std::string& message)
     snprintf(sql, 1024, "insert into offlineMessage(userid, message) values('%d', '%s')", id, message.c_str());
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
       
     return conn->update(sql);
 }
@@ -18,6 +21,9 @@ bool OfflineMessageModel::remove(int id)
     snprintf(sql, 1024, "delete from offlineMessage where userid = '%d'", id);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();
+    if (nullptr == conn) {
+        return false;
+    }
 
     return conn->update(sql);
 }
@@ -28,12 +34,14 @@ std::vector<std::string> OfflineMessageModel::query(int id)
     snprintf(sql, 1024, "select * from offlineMessage where userid = '%d'", id);
 
     std::shared_ptr<MySql> conn = MySqlPool::getMysqlPool()->getConnect();  
+    if (nullptr == conn) {
+        return {};
+    }
 
     MYSQL_RES *result = conn->query(sql);
     if (result == nullptr) {
         return {};
     }
-
     
     std::vector<std::string> messvec;
     MYSQL_ROW row;
