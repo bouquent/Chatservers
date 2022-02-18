@@ -15,7 +15,7 @@ static void sighandler(int signal)
     ChatService::getchatService()->serverCloseExption();
     MYLOG_ERROR("the server recv SIGINT!");
 
-    ::abort();  //exit无法到达想要的效果？
+    ::abort(); 
 }
 
 
@@ -56,7 +56,8 @@ void ChatServer::onMessage(const TcpConnectionPtr& conn, Buffer* buffer, Timesta
     }
 
     MSG_ID msgtype = (MSG_ID)js["msgid"].get<int>();
-    
+
+    //根据msgid的类型，去调用相应功能的回调函数
     auto msgHandler = ChatService::getchatService()->getHandler(msgtype);
     
     msgHandler(conn, js, time);
