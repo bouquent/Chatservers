@@ -5,7 +5,6 @@
 int main(int argc, char** argv)
 {
     if (argc !=  3) {
-        printf("please vaild address and port!\n");
         exit(-1);
     }
     EventLoop loop;
